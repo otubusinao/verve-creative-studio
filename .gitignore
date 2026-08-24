@@ -2,6 +2,4 @@
 /vendor/
 /uploads/*
 !/uploads/.htaccess
-/docs/DEVELOPMENT.md
 .DS_Store
-.htaccess

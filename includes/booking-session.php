@@ -26,6 +26,9 @@ if (!isset($_SESSION['flow_a'])) {
         'venue_setting'     => null, // 'indoor' | 'outdoor'
         'location'          => null, // short display string for the sidebar, derived from the above
         'addons'            => [],   // list of ['label' => ..., 'price' => ...]
+        'customer_name'     => null,
+        'customer_email'    => null,
+        'customer_phone'    => null,
         'guest_count'       => null,
         'event_schedule'    => null,
         'special_requests'  => null,
@@ -95,6 +98,44 @@ function flow_b_set(string $key, $value): void {
  * Service catalog for Flow B — one entry per non-payment service. Taglines/intros reused
  * verbatim from each service's own detail page for consistency (see services/*.php).
  */
+/* ============================================================
+   Offer checkouts (e.g. Birthday Coverage) — simple, single-page,
+   flat-price purchases, distinct from the multi-step Flow A/B wizards.
+   ============================================================ */
+if (!isset($_SESSION['offer'])) {
+    $_SESSION['offer'] = [
+        'slug' => null,
+        'tier_key' => null,
+        'tier_name' => null,
+        'amount' => null,
+        'customer_name' => null,
+        'customer_email' => null,
+        'customer_phone' => null,
+        'booking_ref' => null,
+    ];
+}
+
+function offer_state(): array {
+    return $_SESSION['offer'];
+}
+
+function offer_set(string $key, $value): void {
+    $_SESSION['offer'][$key] = $value;
+}
+
+/**
+ * Birthday Coverage tier catalog — same figures as offers/index.php's display copy.
+ * Kept here (not just inline on the page) so the checkout/payment/webhook can all reference
+ * the same source of truth for pricing instead of trusting a client-submitted amount.
+ */
+function birthday_coverage_tiers(): array {
+    return [
+        'essential' => ['name' => 'Essential', 'price' => 168],
+        'signature' => ['name' => 'Signature', 'price' => 245],
+        'premium'   => ['name' => 'Premium',   'price' => 336],
+    ];
+}
+
 function flow_b_service_catalog(): array {
     return [
         'film-production' => [

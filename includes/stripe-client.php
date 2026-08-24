@@ -21,8 +21,12 @@ function stripe_is_configured(): bool {
 /**
  * Creates a Stripe Checkout Session for the given amount (in the smallest currency unit —
  * pence for GBP) and returns its redirect URL, or null if Stripe isn't configured yet.
+ *
+ * $metadata is attached to the Checkout Session and comes back on the webhook event — this is
+ * how stripe/webhook.php (a separate server-to-server request with no access to the customer's
+ * browser session) knows who the booking was for and what to put in the confirmation emails.
  */
-function stripe_create_checkout_session(string $description, int $amount_pence, string $success_url, string $cancel_url): ?string {
+function stripe_create_checkout_session(string $description, int $amount_pence, string $success_url, string $cancel_url, array $metadata = []): ?string {
     if (!stripe_is_configured()) {
         return null;
     }
@@ -43,6 +47,8 @@ function stripe_create_checkout_session(string $description, int $amount_pence, 
         'mode' => 'payment',
         'success_url' => $success_url,
         'cancel_url' => $cancel_url,
+        'metadata' => $metadata,
+        'customer_email' => $metadata['customer_email'] ?? null,
     ]);
 
     return $session->url;

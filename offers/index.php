@@ -28,7 +28,7 @@ $offers = [
 
 $birthday_tiers = [
     [
-        'name' => 'Essential', 'featured' => false,
+        'key' => 'essential', 'name' => 'Essential', 'featured' => false,
         'was' => 200, 'now' => 168,
         'features' => [
             'Up to 3 hours coverage',
@@ -39,7 +39,7 @@ $birthday_tiers = [
         ],
     ],
     [
-        'name' => 'Signature', 'featured' => true,
+        'key' => 'signature', 'name' => 'Signature', 'featured' => true,
         'was' => 350, 'now' => 245,
         'features' => [
             'Up to 5 hours coverage',
@@ -50,7 +50,7 @@ $birthday_tiers = [
         ],
     ],
     [
-        'name' => 'Premium', 'featured' => false,
+        'key' => 'premium', 'name' => 'Premium', 'featured' => false,
         'was' => 480, 'now' => 336,
         'features' => [
             'Up to 8 hours coverage',
@@ -123,6 +123,7 @@ $birthday_tiers = [
           <li><span class="check">&check;</span><span><?php echo htmlspecialchars($f); ?></span></li>
           <?php endforeach; ?>
         </ul>
+        <a href="<?php echo SITE_URL; ?>/offers/birthday-checkout?tier=<?php echo urlencode($tier['key']); ?>" class="btn <?php echo $tier['featured'] ? 'btn-solid' : 'btn-outline'; ?>" style="width:100%;justify-content:center;">Book This Package</a>
       </div>
       <?php endforeach; ?>
     </div>
@@ -132,8 +133,8 @@ $birthday_tiers = [
     <div style="text-align:center;margin-top:36px;">
       <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold-light);font-size:19px;margin-bottom:20px;">Let's make your celebration unforgettable!</p>
       <div class="cta-actions" style="justify-content:center;">
-        <a href="https://wa.me/447466483138" target="_blank" class="btn btn-solid">WhatsApp Us &rarr;</a>
-        <a href="mailto:tosin@vervecreativestudio.co.uk" class="btn btn-outline">Email Us</a>
+        <a href="<?php echo SITE_URL; ?>/offers/birthday-checkout" class="btn btn-solid">Book Your Package &rarr;</a>
+        <a href="https://wa.me/447466483138" target="_blank" class="btn btn-outline">Questions? WhatsApp Us</a>
       </div>
     </div>
   </div>

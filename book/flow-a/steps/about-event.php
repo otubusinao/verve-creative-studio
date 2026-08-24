@@ -25,6 +25,23 @@ $fa = flow_a_state();
     <p class="wizard-step-sub">A few details help us prepare the right team and equipment for your day.</p>
 
     <form method="post" action="<?php echo SITE_URL; ?>/book/flow-a/steps/save-about-event">
+      <p class="eyebrow" style="margin-bottom:16px;">Your Contact Details</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" name="customer_name" class="form-input" required placeholder="Your name" value="<?php echo htmlspecialchars($fa['customer_name'] ?? ''); ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input type="email" name="customer_email" class="form-input" required placeholder="you@example.com" value="<?php echo htmlspecialchars($fa['customer_email'] ?? ''); ?>">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input type="tel" name="customer_phone" class="form-input" style="max-width:280px;" placeholder="Optional" value="<?php echo htmlspecialchars($fa['customer_phone'] ?? ''); ?>">
+      </div>
+      <p class="form-hint" style="margin-bottom:26px;">We'll send your booking confirmation and receipt to this email.</p>
+
       <div class="form-group">
         <label class="form-label">Estimated Guest Count</label>
         <input type="number" min="1" name="guest_count" class="form-input" style="max-width:200px;" placeholder="e.g. 120" value="<?php echo htmlspecialchars($fa['guest_count'] ?? ''); ?>">

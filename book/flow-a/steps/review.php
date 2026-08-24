@@ -31,6 +31,13 @@ $deposit = $fa['estimated_total'] * DEPOSIT_PERCENTAGE;
 
     <form method="post" action="<?php echo SITE_URL; ?>/book/flow-a/steps/save-review">
       <div class="review-section">
+        <h4>Contact Details</h4>
+        <div class="review-row"><span>Name</span><span><?php echo htmlspecialchars($fa['customer_name'] ?? 'Not provided'); ?></span></div>
+        <div class="review-row"><span>Email</span><span><?php echo htmlspecialchars($fa['customer_email'] ?? 'Not provided'); ?></span></div>
+        <div class="review-row"><span>Phone</span><span><?php echo htmlspecialchars($fa['customer_phone'] ?: '-'); ?></span></div>
+      </div>
+
+      <div class="review-section">
         <h4>Coverage</h4>
         <div class="review-row"><span>Type</span><span><?php echo htmlspecialchars($fa['coverage_label'] ?? 'Not selected'); ?></span></div>
         <div class="review-row"><span>Duration</span><span><?php echo htmlspecialchars($fa['duration_label'] ?? 'Not selected'); ?></span></div>

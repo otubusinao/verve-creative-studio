@@ -15,7 +15,7 @@ require __DIR__ . '/../includes/header.php';
 
 $fa = flow_a_state();
 $status = $_GET['status'] ?? 'demo';
-$booking_ref = 'VC-' . strtoupper(substr(session_id(), 0, 8));
+$booking_ref = $fa['booking_ref'] ?? ('VC-' . strtoupper(substr(session_id(), 0, 8)));
 ?>
 
 <section style="padding:80px 0;">
@@ -27,7 +27,7 @@ $booking_ref = 'VC-' . strtoupper(substr(session_id(), 0, 8));
     <?php endif; ?>
 
     <p class="eyebrow">Booking Confirmed</p>
-    <h1 style="font-size:36px;color:var(--cream);margin-bottom:16px;">Thank You!</h1>
+    <h1 style="font-size:36px;color:var(--cream);margin-bottom:16px;">Thank You<?php echo !empty($fa['customer_name']) ? ', ' . htmlspecialchars($fa['customer_name']) : ''; ?>!</h1>
     <p style="color:var(--muted);font-size:15px;margin-bottom:32px;">Your wedding film &amp; photography booking is confirmed. We can't wait to be part of your day.</p>
 
     <div class="wizard-summary-card" style="margin-bottom:28px;">
@@ -40,7 +40,11 @@ $booking_ref = 'VC-' . strtoupper(substr(session_id(), 0, 8));
       </div>
     </div>
 
-    <p style="color:var(--muted);font-size:13.5px;margin-bottom:28px;">A confirmation email, invoice, and calendar invite would be sent to your inbox here — email delivery isn't wired up yet (see <code>includes/mailer.php</code>, still TODO pending IONOS SMTP credentials).</p>
+    <?php if ($status === 'success' && !empty($fa['customer_email'])): ?>
+    <p style="color:var(--muted);font-size:13.5px;margin-bottom:28px;">A confirmation email and receipt have been sent to <strong><?php echo htmlspecialchars($fa['customer_email']); ?></strong>.</p>
+    <?php else: ?>
+    <p style="color:var(--muted);font-size:13.5px;margin-bottom:28px;">In demo mode, no confirmation email is sent — this only happens once Stripe processes a real payment.</p>
+    <?php endif; ?>
 
     <a href="<?php echo SITE_URL; ?>/" class="btn btn-solid">Return Home</a>
   </div>

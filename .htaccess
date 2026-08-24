@@ -1,0 +1,43 @@
+# Force HTTPS in production only — skipped on localhost so XAMPP dev over plain http still works.
+# Also skipped when already served over HTTPS upstream (e.g. via ngrok tunnel).
+# Confirm IONOS's free SSL is active on the domain before this goes live.
+RewriteEngine On
+RewriteCond %{HTTP_HOST} !=localhost
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Disable directory listing
+Options -Indexes
+
+# Serve index.php automatically for folder requests (should already be Apache's default, set explicitly to be safe)
+DirectoryIndex index.php
+
+# /sitemap.xml is generated dynamically by sitemap.php (real file doesn't exist, so this needs an explicit rule)
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+# ---------- Clean URLs (hide .php from every page) ----------
+
+# 1) If a visitor or search engine hits a URL that still has .php in it, send a permanent
+#    redirect to the extensionless version. This keeps one canonical URL per page for SEO
+#    (no duplicate-content split between /about and /about.php).
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# 2) Same idea for folder pages: redirect /services/index (or /services/index.php, caught above)
+#    to the clean /services/ form.
+RewriteCond %{THE_REQUEST} \s/+(.+?)/index[\s?/] [NC]
+RewriteRule ^ /%1/ [R=301,L]
+
+# 3) Internally rewrite a clean folder URL (e.g. /services/) to its real index.php,
+#    without changing what's shown in the browser's address bar.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ $1/index.php [L]
+
+# 4) Internally rewrite a clean page URL (e.g. /about) to its real about.php file,
+#    again without changing the visible URL.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [L]
