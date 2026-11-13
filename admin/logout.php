@@ -1,6 +1,17 @@
 <?php
-/**
- * Page: Admin Logout
- * Status: BLOCKED — awaiting visual design + copy confirmation per design-first rule (Section 1). Do not build layout yet.
- */
-?>
+require_once __DIR__ . '/../includes/auth.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ' . SITE_URL . '/admin/');
+    exit;
+}
+
+if (!admin_verify_csrf($_POST['csrf_token'] ?? null)) {
+    http_response_code(403);
+    exit('Invalid security token.');
+}
+
+admin_logout();
+
+header('Location: ' . SITE_URL . '/admin/login.php');
+exit;
