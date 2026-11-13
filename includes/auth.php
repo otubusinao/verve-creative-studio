@@ -1,10 +1,13 @@
+
 <?php
-/**
- * Verve Creative Studio — Admin authentication
- */
+
 require_once __DIR__ . '/db.php';
 
-function admin_start_session(): void {
+/**
+ * Start a secure administrator session.
+ */
+function admin_start_session(): void
+{
     if (session_status() === PHP_SESSION_ACTIVE) {
         return;
     }
@@ -19,7 +22,7 @@ function admin_start_session(): void {
         'path' => '/',
         'secure' => $secure,
         'httponly' => true,
-        'samesite' => 'Strict'
+        'samesite' => 'Strict',
     ]);
 
     session_start();
@@ -27,7 +30,11 @@ function admin_start_session(): void {
 
 admin_start_session();
 
-function admin_csrf_token(): string {
+/**
+ * Generate a CSRF token.
+ */
+function admin_csrf_token(): string
+{
     if (empty($_SESSION['admin_csrf_token'])) {
         $_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
     }
@@ -35,32 +42,72 @@ function admin_csrf_token(): string {
     return $_SESSION['admin_csrf_token'];
 }
 
-function admin_verify_csrf(?string $token): bool {
+/**
+ * Verify a submitted CSRF token.
+ */
+function admin_verify_csrf(?string $token): bool
+{
     return is_string($token)
         && isset($_SESSION['admin_csrf_token'])
         && hash_equals($_SESSION['admin_csrf_token'], $token);
 }
 
-function admin_is_logged_in(): bool {
+/**
+ * Check whether an administrator is authenticated.
+ */
+function admin_is_logged_in(): bool
+{
     return isset($_SESSION['admin_user']['id']);
 }
 
-function admin_current_user(): ?array {
-    return admin_is_logged_in() ? $_SESSION['admin_user'] : null;
+/**
+ * Return the current administrator.
+ */
+function admin_current_user(): ?array
+{
+    return admin_is_logged_in()
+        ? $_SESSION['admin_user']
+        : null;
 }
 
-function admin_login_attempt(PDO $pdo, string $email, string $password): bool {
-    $stmt = $pdo->prepare(
-        "SELECT id, name, email, password_hash, role
-         FROM admin_users
-         WHERE email = :email AND status = 'active'
-         LIMIT 1"
-    );
+/**
+ * Authenticate an administrator using the existing database schema.
+ */
+function admin_login_attempt(
+    PDO $pdo,
+    string $email,
+    string $password
+): bool {
 
-    $stmt->execute(['email' => trim(strtolower($email))]);
-    $user = $stmt->fetch();
+    $sql = "
+        SELECT
+            u.id,
+            u.full_name,
+            u.email,
+            u.password_hash,
+            u.role_id,
+            u.status,
+            r.role_key,
+            r.role_name
+        FROM admin_users u
+        INNER JOIN admin_roles r ON r.id = u.role_id
+        WHERE u.email = :email
+        LIMIT 1
+    ";
 
-    if (!$user || !password_verify($password, $user['password_hash'])) {
+    $stmt = $pdo->prepare($sql);
+
+    $stmt->execute([
+        'email' => trim(strtolower($email)),
+    ]);
+
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (
+        !$user ||
+        $user['status'] !== 'active' ||
+        !password_verify($password, $user['password_hash'])
+    ) {
         return false;
     }
 
@@ -68,9 +115,11 @@ function admin_login_attempt(PDO $pdo, string $email, string $password): bool {
 
     $_SESSION['admin_user'] = [
         'id' => (int) $user['id'],
-        'name' => $user['name'],
+        'name' => $user['full_name'],
         'email' => $user['email'],
-        'role' => $user['role']
+        'role_id' => (int) $user['role_id'],
+        'role' => $user['role_key'],
+        'role_name' => $user['role_name'],
     ];
 
     unset($_SESSION['admin_csrf_token']);
@@ -78,19 +127,54 @@ function admin_login_attempt(PDO $pdo, string $email, string $password): bool {
     $update = $pdo->prepare(
         'UPDATE admin_users SET last_login_at = NOW() WHERE id = :id'
     );
-    $update->execute(['id' => $user['id']]);
+
+    $update->execute([
+        'id' => $user['id'],
+    ]);
 
     return true;
 }
 
-function admin_require_login(): void {
+/**
+ * Require administrator authentication.
+ */
+function admin_require_login(): void
+{
     if (!admin_is_logged_in()) {
         header('Location: ' . SITE_URL . '/admin/login.php');
         exit;
     }
 }
 
-function admin_logout(): void {
+/**
+ * Check administrator role.
+ */
+function admin_has_role(array $allowed_roles): bool
+{
+    $user = admin_current_user();
+
+    return $user !== null
+        && in_array($user['role'], $allowed_roles, true);
+}
+
+/**
+ * Restrict access to authorised roles.
+ */
+function admin_require_role(array $allowed_roles): void
+{
+    admin_require_login();
+
+    if (!admin_has_role($allowed_roles)) {
+        http_response_code(403);
+        exit('You do not have permission to access this section.');
+    }
+}
+
+/**
+ * Log out the administrator.
+ */
+function admin_logout(): void
+{
     $_SESSION = [];
 
     if (ini_get('session.use_cookies')) {
@@ -102,7 +186,7 @@ function admin_logout(): void {
             'domain' => $params['domain'],
             'secure' => $params['secure'],
             'httponly' => $params['httponly'],
-            'samesite' => 'Strict'
+            'samesite' => 'Strict',
         ]);
     }
 
